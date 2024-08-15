@@ -9,6 +9,7 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.Observer
+import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.todoapp.databinding.ActivityMainBinding
 
 class MainActivity : AppCompatActivity() {
@@ -22,10 +23,14 @@ class MainActivity : AppCompatActivity() {
         binding.viewModel = viewModel
         binding.lifecycleOwner = this
 
-       viewModel.todoList.observe(this, Observer { todos ->
-           val todoTextView = findViewById<TextView>(R.id.tvItemList)
-           todoTextView.text = todos.joinToString("\n") { it.title }
-       })
+        val adapter = TodoAdapter(viewModel)
+        binding.recyclerView.layoutManager = LinearLayoutManager(this)
+        binding.recyclerView.adapter = adapter
+
+        viewModel.todoList.observe(this, Observer { todos ->
+            adapter.submitList(todos.toList())
+        })
+
 
         enableEdgeToEdge()
 
@@ -36,12 +41,12 @@ class MainActivity : AppCompatActivity() {
         }
 
         binding.btnAdd.setOnClickListener {
-            val todo: String = binding.etNewItem.text.toString()
-
-            if (todo.isNotEmpty()) {
-                binding.tvItemList.text = ""
-                viewModel.add(Todo(todo))
+            val todoText = binding.etNewItem.text.toString()
+            if (todoText.isNotEmpty()) {
+                viewModel.add(Todo(todoText))
+                binding.etNewItem.text.clear()
             }
         }
+
     }
 }

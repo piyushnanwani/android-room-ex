@@ -20,4 +20,18 @@ class ToDoViewModel: ViewModel() {
         }
     }
 
+    fun removeItem(position: Int) {
+        _todoList.value?.apply {
+            removeAt(position)
+            _todoList.value = this
+        }
+    }
+
+    fun updateItem(position: Int, newTodo: Todo) {
+        _todoList.value?.apply {
+            this[position] = newTodo
+            _todoList.value = this
+        }
+    }
+
 }
