@@ -1,36 +1,40 @@
 package com.example.todoapp
 
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import kotlinx.coroutines.launch
+import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.Dispatchers
 
-class ToDoViewModel: ViewModel() {
+class ToDoViewModel(application: Application): AndroidViewModel(application) {
 
-    private val _todoList = MutableLiveData<MutableList<Todo>>()
-    val todoList: LiveData<MutableList<Todo>> get() = _todoList
+    private val repository: TodoRepository
+    val todoList: LiveData<List<Todo>>
 
     init {
-        _todoList.value = mutableListOf()
+        val todoDao = TodoDatabase.getDataBase(application).todoDao()
+        repository = TodoRepository(todoDao)
+        todoList = repository.allTodos
     }
 
     fun add(todo: Todo) {
-        _todoList.value?.apply {
-            add(todo)
-            _todoList.value = this
+        viewModelScope.launch(Dispatchers.IO) {
+            repository.insert(todo)
         }
     }
 
-    fun removeItem(position: Int) {
-        _todoList.value?.apply {
-            removeAt(position)
-            _todoList.value = this
+    fun updateItem(todo: Todo) {
+        viewModelScope.launch(Dispatchers.IO) {
+            repository.update(todo)
         }
     }
 
-    fun updateItem(position: Int, newTodo: Todo) {
-        _todoList.value?.apply {
-            this[position] = newTodo
-            _todoList.value = this
+    fun removeItem(todo: Todo) {
+        viewModelScope.launch(Dispatchers.IO) {
+            repository.delete(todo)
         }
     }
 
